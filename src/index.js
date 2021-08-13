@@ -1,21 +1,36 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const fetch = require('node-fetch');
 
-var TGtoken = ""; // Add your bot token that you get from the bot father on Telegram
-var telegramUrl = "https://api.telegram.org/bot" + TGtoken;
-
-const getVotes = () =>{
-    app.post('/api/telegram', function (req, res) {
-        req.send('')
-        res.send('Got a POST request')
-      })
-}
-
-
-
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-})
-
-getVotes()
+const query = `
+query Votes {
+    votes (
+      first: 1000
+      skip: 0
+      where: {
+        proposal: "QmPvbwguLfcVryzBRrbY4Pb9bCtxURagdv1XjhtFLf3wHj"
+      }
+      orderBy: "created",
+      orderDirection: desc
+    ) {
+      id
+      voter
+      created
+      proposal {
+        id
+      }
+      choice
+      space {
+        id
+      }
+    }
+  }
+`;
+const url = "https://hub.snapshot.page/graphql";
+const opts = {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ query })
+};
+fetch(url, opts)
+  .then(res => res.json())
+  .then(console.log)
+  .catch(console.error);
