@@ -1,30 +1,51 @@
+let bodyParser = require('body-parser')
 const express = require('express')
 const app = express()
-const port = 3000
+const fetch = require('node-fetch');
 
-const TGtoken = ""; // Add your bot token that you get from the bot father on Telegram
-const telegramUrl = "https://api.telegram.org/bot" + TGtoken;
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
 
-// The event data we're posting to snapshot
-const proposalID = ""; // This is the proposal ID we need
-const snapshotSpace = ""; // This is the snapshot space you want to get data from (eg: yam.eth)
-const snapshotExpire = ""; // Expiry something idk
-const snapshotEvent = ""; // This is the event type we want
+app.use(express.json({
+  type: "application/json" // optional, only if you want to be sure that everything is parset as JSON. Wouldn't reccomend
+}));
 
-const telegramWebdata = {
-  id: proposalID,
-  event: "proposal/created",
-  space: snapshotSpace,
-  expire: snapshotExpire
-};
+const TGtoken = "1985626201:AAFuMPNY3sBH8njCVkbXqqZdH6kvpgXWa-8"; // Add your bot token that you get from the bot father on Telegram
+const TGGroupName = "@MeekuTest"; // Add your group name, for ex: @CryptoChan
 
+const sendMessageURL = `https://api.telegram.org/bot${TGtoken}/sendMessage`
+
+
+// Get posted data from the URL link
 app.post('/api/telegram', function (req, res) {
-    req.send('')
-    res.send('Got a POST request')
+  console.log(req.body)
+  const postPromise = fetch(sendMessageURL, {
+    method: 'post',
+    body: JSON.stringify({
+      chat_id: TGGroupName, // Add in the variable for the group chat name
+      text: `Your proposal ID is: ${req.body.id}` // Todo: Add proposalID
+    }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+  console.log("We're logging the promise, y u so sexy tho?")
+  console.log(postPromise)
+
+  postPromise.then((response) => {
+    console.log("inside .then")
+    console.log(response)
+    res.send(`Done sending to telegram: ${response.body}`)
   })
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  postPromise.catch((err) => {
+    console.log("Logs the error, if there is one")
+    console.log(err)
+    res.error("Fucked!");
+  })
+
 })
 
-getVotes()
+app.listen(3000, () => {
+  console.log(`Example app listening at http://localhost:3000`)
+})
